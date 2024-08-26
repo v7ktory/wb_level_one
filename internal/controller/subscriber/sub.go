@@ -66,7 +66,7 @@ func (s *Subscriber) Subscribe(ctx context.Context, streamName, consumerName, su
 		// Convert NATS request and save in Postgres and cache
 		order := ConvertNATSReq(orderRequest)
 
-		uid, err := s.pgRepo.Save(ctx, order)
+		uid, err := s.pgRepo.SaveOrder(ctx, order)
 		if err != nil {
 			s.logger.Error("Failed to save orderr", slog.Any("error", err.Error()))
 			return

@@ -48,6 +48,13 @@ func Run() {
 	logger.Info("Initializing cacheRepo...")
 	cacheRepo := cache.NewLRUCache[string, *entity.Order](1_073_741_824) // Cache capacity = 1GB
 
+	// Cache Warmup
+	logger.Info("Warming up cache...")
+	err = cache.Warmup(context.Background(), pgRepo, cacheRepo)
+	if err != nil {
+		log.Fatal(fmt.Errorf("app - Run - cache.Warmup: %w", err))
+	}
+
 	// NATS
 	logger.Info("Initializing NATS...")
 	n, err := natsclient.New(cfg.NATS.URL, natsclient.WithMaxReconnects(cfg.NATS.MaxReconnects), natsclient.WithReconnectWait(cfg.NATS.ReconnectWait), natsclient.WithConnTimeout(cfg.NATS.Timeout))

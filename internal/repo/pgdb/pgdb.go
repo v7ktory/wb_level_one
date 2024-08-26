@@ -8,7 +8,9 @@ import (
 )
 
 type Order interface {
-	Save(ctx context.Context, order *entity.Order) (string, error)
+	SaveOrder(ctx context.Context, order *entity.Order) (string, error)
+	GetLRUOrders(ctx context.Context) ([]*entity.Order, error)
+	UpdateOrderTime(ctx context.Context, uid string) error
 }
 type PgRepo struct {
 	Order

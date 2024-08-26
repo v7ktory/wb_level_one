@@ -7,10 +7,12 @@ import (
 
 	"github.com/v7ktory/wb_task_one/internal/entity"
 	"github.com/v7ktory/wb_task_one/internal/repo/cache"
+	"github.com/v7ktory/wb_task_one/internal/repo/pgdb"
 )
 
 type orderRouter struct {
 	cache  cache.CacheRepo[string, *entity.Order]
+	pgRepo *pgdb.PgRepo
 	logger *slog.Logger
 }
 
@@ -56,6 +58,13 @@ func (o *orderRouter) getOrderHandler() http.HandlerFunc {
 				return
 			}
 			tmpl.Execute(w, nil)
+			return
+		}
+
+		err := o.pgRepo.UpdateOrderTime(r.Context(), uid)
+		if err != nil {
+			o.logger.Error("Error updating order time", slog.Any("error", err.Error()))
+			encode(w, http.StatusInternalServerError, "Error updating order time")
 			return
 		}
 

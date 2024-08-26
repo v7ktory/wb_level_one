@@ -1,5 +1,13 @@
 package cache
 
+import (
+	"context"
+	"fmt"
+
+	"github.com/v7ktory/wb_task_one/internal/entity"
+	"github.com/v7ktory/wb_task_one/internal/repo/pgdb"
+)
+
 type CacheRepo[KeyT comparable, ValueT any] interface {
 	Get(key KeyT) (ValueT, bool)
 	Put(key KeyT, value ValueT)
@@ -17,7 +25,19 @@ func NewLRUCache[KeyT comparable, ValueT any](capacity int) CacheRepo[KeyT, Valu
 		list:     newList[KeyT, ValueT](),
 	}
 }
+func Warmup(ctx context.Context, pgRepo *pgdb.PgRepo, lru CacheRepo[string, *entity.Order]) error {
+	orders, err := pgRepo.GetLRUOrders(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to warm up cache: %w", err)
+	}
+	for _, order := range orders {
+		if order != nil {
+			lru.Put(order.UID, order)
+		}
+	}
 
+	return nil
+}
 func (lru *LRUCache[KeyT, ValueT]) Get(key KeyT) (ValueT, bool) {
 	if node, found := lru.cache[key]; found {
 		lru.list.moveToFront(node)

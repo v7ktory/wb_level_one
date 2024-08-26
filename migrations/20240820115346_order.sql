@@ -14,7 +14,8 @@ CREATE TABLE "orders" (
   "shardkey" varchar(255) NOT NULL,
   "sm_id" int NOT NULL,
   "date_created" timestamp NOT NULL,
-  "off_shard" varchar(255) NOT NULL
+  "off_shard" varchar(255) NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
 );
 -- +goose StatementEnd
 
