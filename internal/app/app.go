@@ -86,7 +86,7 @@ func Run() {
 
 	// Handlers
 	mux := http.NewServeMux()
-	v1.AddRoutes(mux, logger, cacheRepo)
+	v1.AddRoutes(mux, cacheRepo, pgRepo, logger)
 
 	// HTTP server
 	logger.Info("Starting http server...")

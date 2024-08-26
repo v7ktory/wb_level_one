@@ -16,9 +16,10 @@ type orderRouter struct {
 	logger *slog.Logger
 }
 
-func newOrderRouter(logger *slog.Logger, cache cache.CacheRepo[string, *entity.Order]) http.Handler {
+func newOrderRouter(cache cache.CacheRepo[string, *entity.Order], pgRepo *pgdb.PgRepo, logger *slog.Logger) http.Handler {
 	o := &orderRouter{
 		cache:  cache,
+		pgRepo: pgRepo,
 		logger: logger,
 	}
 	mux := http.NewServeMux()
