@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Lookup</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Find Your Order</h1>
+        <form id="orderForm" action="/api/v1/order/my/" method="get" onsubmit="updateURL()">
+            <label for="uid">Enter Order ID:</label>
+            <input type="text" id="uid" name="uid" required>
+            <button type="submit">Get Order</button>
+        </form>
+    </div>
+
+    <script>
+        function updateURL() {
+            const uid = document.getElementById('uid').value;
+            const form = document.getElementById('orderForm');
+            form.action = `/api/v1/order/my/${uid}`;
+        }
+    </script>
+</body>
+</html>

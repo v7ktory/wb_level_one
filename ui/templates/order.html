@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Lookup</title>
+    <link rel="stylesheet" href="/static/order.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details</h1>
+        <div class="order-info">
+            <p><strong>Order UID:</strong> {{.UID}}</p>
+            <p><strong>Track Number:</strong> {{.TrackNumber}}</p>
+            <p><strong>Customer ID:</strong> {{.CustomerID}}</p>
+            <p><strong>Delivery Service:</strong> {{.DeliveryService}}</p>
+            <p><strong>Date Created:</strong> {{.DateCreated}}</p>
+            
+            <h2>Delivery Information</h2>
+            <div class="section">
+                <p><strong>Name:</strong> {{.Delivery.Name}}</p>
+                <p><strong>Phone:</strong> {{.Delivery.Phone}}</p>
+                <p><strong>Address:</strong> {{.Delivery.Address}}, {{.Delivery.City}}, {{.Delivery.Region}}, {{.Delivery.Zip}}</p>
+                <p><strong>Email:</strong> {{.Delivery.Email}}</p>
+            </div>
+            
+            <h2>Payment Information</h2>
+            <div class="section">
+                <p><strong>Transaction:</strong> {{.Payment.Transaction}}</p>
+                <p><strong>Amount:</strong> {{.Payment.Amount}}</p>
+                <p><strong>Currency:</strong> {{.Payment.Currency}}</p>
+                <p><strong>Provider:</strong> {{.Payment.Provider}}</p>
+            </div>
+            
+            <h2>Items</h2>
+            <ul class="items-list">
+                {{range .Items}}
+                <li>
+                    <div class="item-info">
+                        <p><strong>ChrtID:</strong> {{.ChrtID}} <strong>Track Number:</strong> {{.TrackNumber}} <strong>Price:</strong> ${{.Price}}</p>
+                        <p><strong>RID:</strong> {{.Rid}} <strong>Name:</strong> {{.Name}} <strong>Sale:</strong> {{.Sale}}%</p>
+                        <p><strong>Total Price:</strong> ${{.TotalPrice}} <strong>NmID:</strong> {{.NmID}} <strong>Brand:</strong> {{.Brand}} <strong>Status:</strong> {{.Status}}</p>
+                    </div>
+                </li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
