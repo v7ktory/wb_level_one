@@ -13,7 +13,7 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/v7ktory/wb_task_one/internal/config"
 	v1 "github.com/v7ktory/wb_task_one/internal/controller/http/v1"
-	"github.com/v7ktory/wb_task_one/internal/controller/subscriber"
+	natsjs "github.com/v7ktory/wb_task_one/internal/controller/nats_js"
 	"github.com/v7ktory/wb_task_one/internal/entity"
 	httpserver "github.com/v7ktory/wb_task_one/internal/http_server"
 	"github.com/v7ktory/wb_task_one/internal/repo/cache"
@@ -69,16 +69,34 @@ func Run() {
 	if err != nil {
 		log.Fatal(fmt.Errorf("app - Run - n.Conn.JetStream: %w", err))
 	}
-
-	// Subscriber
-	logger.Info("Initializing subscriber...")
-	sub := subscriber.New(js, pgRepo, cacheRepo, logger)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Publisher
+	logger.Info("Initializing publisher...")
+	pub := natsjs.NewPublisher(js, logger)
+
+	// Create NATS stream
+	logger.Info("Creating NATS stream...")
+	_, err = pub.CreateStream(ctx, cfg.NATS.StreamName, cfg.NATS.Subject)
+	if err != nil {
+		log.Fatal(fmt.Errorf("app - Run - sub.CreateStream: %w", err))
+	}
+
+	// Subscriber
+	logger.Info("Initializing subscriber...")
+	sub := natsjs.NewSubscriber(js, pgRepo, cacheRepo, logger)
+
+	// Create NATS consumer
+	logger.Info("Creating NATS consumer...")
+	c, err := sub.CreateConsumer(ctx, cfg.NATS.StreamName, cfg.NATS.ConsumerName)
+	if err != nil {
+		log.Fatal(fmt.Errorf("app - Run - sub.CreateConsumer: %w", err))
+	}
+
+	// Subscribe to NATS stream and consume incoming messages
 	go func() {
-		err = sub.Subscribe(ctx, cfg.NATS.StreamName, cfg.NATS.ConsumerName, cfg.NATS.Subject)
+		err = sub.Subscribe(ctx, c)
 		if err != nil {
 			log.Fatal(fmt.Errorf("app - Run - sub.Subscribe: %w", err))
 		}

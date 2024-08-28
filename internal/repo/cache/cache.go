@@ -8,7 +8,7 @@ import (
 	"github.com/v7ktory/wb_task_one/internal/repo/pgdb"
 )
 
-type CacheRepo[KeyT comparable, ValueT any] interface {
+type Cache[KeyT comparable, ValueT any] interface {
 	Get(key KeyT) (ValueT, bool)
 	Put(key KeyT, value ValueT)
 }
@@ -18,14 +18,14 @@ type LRUCache[KeyT comparable, ValueT any] struct {
 	list     *list[KeyT, ValueT]
 }
 
-func NewLRUCache[KeyT comparable, ValueT any](capacity int) CacheRepo[KeyT, ValueT] {
+func NewLRUCache[KeyT comparable, ValueT any](capacity int) Cache[KeyT, ValueT] {
 	return &LRUCache[KeyT, ValueT]{
 		capacity: capacity,
 		cache:    make(map[KeyT]*node[KeyT, ValueT]),
 		list:     newList[KeyT, ValueT](),
 	}
 }
-func Warmup(ctx context.Context, pgRepo *pgdb.PgRepo, lru CacheRepo[string, *entity.Order]) error {
+func Warmup(ctx context.Context, pgRepo *pgdb.PgRepo, lru Cache[string, *entity.Order]) error {
 	orders, err := pgRepo.GetLRUOrders(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to warm up cache: %w", err)

@@ -1,4 +1,4 @@
-package subscriber
+package natsjs
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/v7ktory/wb_task_one/internal/model"
 )
 
-func DecodeNATSReq[T model.Validator](data []byte) (T, map[string]string, error) {
+func decodeNATSReq[T model.Validator](data []byte) (T, map[string]string, error) {
 	var v T
 	if err := json.Unmarshal(data, &v); err != nil {
 		return v, nil, fmt.Errorf("decode json: %w", err)
@@ -20,7 +20,7 @@ func DecodeNATSReq[T model.Validator](data []byte) (T, map[string]string, error)
 	return v, nil, nil
 }
 
-func ConvertNATSReq(orderRequest model.Order) *entity.Order {
+func convertNATSReq(orderRequest model.Order) *entity.Order {
 	delivery := entity.DeliveryAttrs{
 		Name:    orderRequest.Delivery.Name,
 		Phone:   orderRequest.Delivery.Phone,

@@ -29,3 +29,8 @@ wait-for-db:
 pub:
 	@json_data=$$(cat order.json); \
 	nats pub example-subject "$$json_data"
+
+# tests
+test:
+	go test ./...
+	
