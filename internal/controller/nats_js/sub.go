@@ -9,31 +9,18 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/v7ktory/wb_task_one/internal/entity"
 	"github.com/v7ktory/wb_task_one/internal/model"
-)
-
-type (
-	JetStream interface {
-		CreateOrUpdateConsumer(ctx context.Context, stream string, cfg jetstream.ConsumerConfig) (jetstream.Consumer, error)
-	}
-	Consumer interface {
-		Consume(handler jetstream.MessageHandler, opts ...jetstream.PullConsumeOpt) (jetstream.ConsumeContext, error)
-	}
-	Order interface {
-		SaveOrder(ctx context.Context, order *entity.Order) (string, error)
-	}
-	Cache[K comparable, V any] interface {
-		Put(key K, value V)
-	}
+	"github.com/v7ktory/wb_task_one/internal/repo/cache"
+	"github.com/v7ktory/wb_task_one/internal/repo/pgdb"
 )
 
 type Subscriber struct {
-	jetStr    JetStream
-	orderRepo Order
-	cache     Cache[string, *entity.Order]
+	jetStr    jetstream.JetStream
+	orderRepo pgdb.Order
+	cache     cache.Cache[string, *entity.Order]
 	logger    *slog.Logger
 }
 
-func NewSubscriber(jetStr JetStream, orderRepo Order, cache Cache[string, *entity.Order], logger *slog.Logger) *Subscriber {
+func NewSubscriber(jetStr jetstream.JetStream, orderRepo pgdb.Order, cache cache.Cache[string, *entity.Order], logger *slog.Logger) *Subscriber {
 	return &Subscriber{
 		jetStr:    jetStr,
 		orderRepo: orderRepo,
@@ -43,13 +30,13 @@ func NewSubscriber(jetStr JetStream, orderRepo Order, cache Cache[string, *entit
 }
 
 // Subscribe to NATS stream and consume incoming messages
-func (s *Subscriber) Subscribe(ctx context.Context, c Consumer) error {
+func (s *Subscriber) Subscribe(ctx context.Context, c jetstream.Consumer) error {
 	const op = "subscriber.subscriber.go - Subscribe"
 
 	cons, err := c.Consume(func(msg jetstream.Msg) {
 		defer msg.Ack()
 
-		if err := s.handleMessage(ctx, msg); err != nil {
+		if err := s.handleMessage(ctx, msg.Data()); err != nil {
 			s.logger.Error("Message handling error", slog.Any("error", err.Error()), slog.Any("operation", op))
 		}
 	})
@@ -64,10 +51,10 @@ func (s *Subscriber) Subscribe(ctx context.Context, c Consumer) error {
 	return nil
 }
 
-func (s *Subscriber) handleMessage(ctx context.Context, msg jetstream.Msg) error {
+func (s *Subscriber) handleMessage(ctx context.Context, data []byte) error {
 	const op = "subscriber.subscriber.go - handleMessage"
 
-	orderRequest, problems, err := decodeNATSReq[model.Order](msg.Data())
+	orderRequest, problems, err := decodeNATSReq[model.Order](data)
 	if err != nil {
 		if len(problems) > 0 {
 			for _, problem := range problems {
